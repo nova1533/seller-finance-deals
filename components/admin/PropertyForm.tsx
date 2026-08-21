@@ -95,8 +95,11 @@ export default function PropertyForm({ property }: { property?: Property }) {
             defaultValue={property?.year_built ?? undefined}
           />
           <div>
-            <label className="block text-sm font-medium text-ink-soft mb-1">Category</label>
+            <label htmlFor="category" className="block text-sm font-medium text-ink-soft mb-1">
+              Category
+            </label>
             <select
+              id="category"
               name="category"
               defaultValue={property?.category ?? "available"}
               className="w-full rounded-lg border border-rule px-3 py-2"
@@ -108,8 +111,11 @@ export default function PropertyForm({ property }: { property?: Property }) {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-ink-soft mb-1">Description</label>
+          <label htmlFor="description" className="block text-sm font-medium text-ink-soft mb-1">
+            Description
+          </label>
           <textarea
+            id="description"
             name="description"
             rows={5}
             defaultValue={property?.description ?? ""}
@@ -176,8 +182,11 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink-soft mb-1">{label}</label>
+      <label htmlFor={name} className="block text-sm font-medium text-ink-soft mb-1">
+        {label}
+      </label>
       <input
+        id={name}
         type={type}
         name={name}
         step={step}

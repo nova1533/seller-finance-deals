@@ -50,7 +50,7 @@ export default async function PropertyDetailPage({
         {property.category !== "sold" && (
           <a
             href={siteConfig.leadFormUrl || (siteConfig.phone ? `tel:${siteConfig.phone}` : "#")}
-            className="rounded-full bg-clay px-6 py-3 font-semibold text-cream hover:bg-clay-deep"
+            className="rounded-full bg-clay-deep px-6 py-3 font-semibold text-cream hover:brightness-90"
           >
             Get More Info
           </a>

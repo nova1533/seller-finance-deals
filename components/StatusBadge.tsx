@@ -8,7 +8,7 @@ const LABELS: Record<PropertyCategory, string> = {
 
 const STYLES: Record<PropertyCategory, string> = {
   available: "bg-forest text-cream",
-  coming_soon: "bg-clay text-cream",
+  coming_soon: "bg-clay-deep text-cream",
   sold: "bg-ink-mute text-cream",
 };
 
