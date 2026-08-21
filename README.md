@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Seller Finance Deals
 
-## Getting Started
+Public site listing homes available on contract for deed. Next.js + Tailwind, hosted on Vercel,
+content stored in Supabase.
 
-First, run the development server:
+## One-time setup (Boz)
+
+1. **Database + photo storage** — open the Supabase project's SQL Editor and run everything in
+   [`supabase/schema.sql`](./supabase/schema.sql). This creates the `properties` table and the
+   `property-photos` storage bucket.
+
+2. **Environment variables** — in the Vercel project's Settings → Environment Variables, add:
+
+   | Variable | Where to find it |
+   |---|---|
+   | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Settings → API → Project URL |
+   | `NEXT_PUBLIC_SUPABASE_KEY` | Supabase → Settings → API → "publishable" key |
+   | `SUPABASE_URL` | same Project URL as above |
+   | `SUPABASE_SECRET_KEY` | Supabase → Settings → API → "secret" key (not the publishable one) |
+   | `ADMIN_PASSWORD` | pick a password for the `/admin` add/edit-property page |
+   | `ADMIN_SESSION_SECRET` | any random string (optional but recommended) |
+   | `NEXT_PUBLIC_CONTACT_PHONE` | the phone number shown on the site |
+   | `NEXT_PUBLIC_LEAD_FORM_URL` | link to the buyer-inquiry Google Form, once created |
+
+   See `.env.example` for the same list.
+
+3. **Buyer lead form** — create a Google Form for people interested in a property (name, phone,
+   email, which property, message). In the form's Responses tab, turn on "Get email
+   notifications for new responses." Paste the form's live URL into `NEXT_PUBLIC_LEAD_FORM_URL`.
+
+## Adding or editing a property
+
+Go to `/admin`, log in with `ADMIN_PASSWORD`, and use "Add Property" or "Edit." Photos upload
+directly from that form into Supabase — no separate step needed.
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Copy `.env.example` to `.env.local` and fill in the same values as above.
