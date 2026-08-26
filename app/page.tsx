@@ -28,8 +28,8 @@ export default async function HomePage() {
             <Image
               src="/hero-house.png"
               alt=""
-              width={1840}
-              height={1245}
+              width={2096}
+              height={1141}
               priority
               className="h-auto w-full"
             />
