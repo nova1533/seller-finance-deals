@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
 
   if (!process.env.ADMIN_PASSWORD) {
     return NextResponse.json(
-      { error: "Admin login isn't configured yet — set ADMIN_PASSWORD." },
+      { error: "Admin login isn't configured yet. Set ADMIN_PASSWORD." },
       { status: 500 }
     );
   }

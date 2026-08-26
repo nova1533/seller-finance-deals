@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import Anthropic from "@anthropic-ai/sdk";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slugify";
 
@@ -95,6 +96,71 @@ export async function saveProperty(formData: FormData) {
   revalidatePath(`/properties/${slug}`);
   revalidatePath("/admin");
   redirect("/admin");
+}
+
+export interface DescriptionInput {
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  price: string;
+  down_payment: string;
+  monthly_payment: string;
+  term_years: string;
+  beds: string;
+  baths: string;
+  sqft: string;
+  lot_size: string;
+  year_built: string;
+  category: string;
+}
+
+export async function generateDescription(input: DescriptionInput): Promise<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error("AI description generation isn't configured. Set ANTHROPIC_API_KEY.");
+  }
+
+  const facts: string[] = [];
+  const addr = [input.address, input.city, input.state, input.zip].filter(Boolean).join(", ");
+  if (addr) facts.push(`Address: ${addr}`);
+  if (input.price) facts.push(`Price: $${input.price}`);
+  if (input.down_payment) facts.push(`Down payment: $${input.down_payment}`);
+  if (input.monthly_payment) facts.push(`Monthly payment: $${input.monthly_payment}`);
+  if (input.term_years) facts.push(`Term: ${input.term_years} years`);
+  if (input.beds) facts.push(`Bedrooms: ${input.beds}`);
+  if (input.baths) facts.push(`Bathrooms: ${input.baths}`);
+  if (input.sqft) facts.push(`Square footage: ${input.sqft}`);
+  if (input.lot_size) facts.push(`Lot size: ${input.lot_size}`);
+  if (input.year_built) facts.push(`Year built: ${input.year_built}`);
+  if (input.category) facts.push(`Status: ${input.category}`);
+
+  if (facts.length === 0) {
+    throw new Error("Fill in some property details first, then generate a description.");
+  }
+
+  const client = new Anthropic({ apiKey });
+  const message = await client.messages.create({
+    model: "claude-sonnet-5",
+    max_tokens: 300,
+    messages: [
+      {
+        role: "user",
+        content:
+          "Write a short, warm, honest 3 to 4 sentence buyer-facing description for a home " +
+          "being sold on contract for deed (seller financing) in the Oklahoma City metro. " +
+          "Use only the facts given below, never invent details like condition, renovations, " +
+          "or neighborhood features that aren't listed. Do not use em dashes, use commas or " +
+          "periods instead. Write plain prose only, no headers or bullet points.\n\n" +
+          facts.join("\n"),
+      },
+    ],
+  });
+
+  const block = message.content.find((b) => b.type === "text");
+  const text = block && "text" in block ? block.text.trim() : "";
+  if (!text) throw new Error("The AI didn't return a description. Try again.");
+  return text;
 }
 
 export async function deleteProperty(formData: FormData) {

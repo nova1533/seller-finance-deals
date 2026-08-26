@@ -21,6 +21,7 @@ content stored in Supabase.
    | `ADMIN_SESSION_SECRET` | any random string (optional but recommended) |
    | `NEXT_PUBLIC_CONTACT_PHONE` | the phone number shown on the site |
    | `NEXT_PUBLIC_LEAD_FORM_URL` | link to the buyer-inquiry Google Form, once created |
+   | `ANTHROPIC_API_KEY` | powers the "Generate with AI" description button in `/admin` |
 
    See `.env.example` for the same list.
 
@@ -31,7 +32,11 @@ content stored in Supabase.
 ## Adding or editing a property
 
 Go to `/admin`, log in with `ADMIN_PASSWORD`, and use "Add Property" or "Edit." Photos upload
-directly from that form into Supabase — no separate step needed.
+directly from that form into Supabase, no separate step needed.
+
+Fill in the address, terms, and details fields, then click "Generate with AI" above the
+Description box to draft a description from what you've entered. It only uses the facts you've
+typed in, it never looks anything up online, so review and edit before saving.
 
 ## Local development
 

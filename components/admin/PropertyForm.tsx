@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { saveProperty } from "@/app/admin/actions";
+import { useRef, useState } from "react";
+import { saveProperty, generateDescription } from "@/app/admin/actions";
 import { photoUrl } from "@/lib/supabase/public";
 import type { Property } from "@/lib/types";
 
 export default function PropertyForm({ property }: { property?: Property }) {
   const [keptPhotos, setKeptPhotos] = useState<string[]>(property?.photos ?? []);
   const [submitting, setSubmitting] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
   function togglePhoto(path: string) {
     setKeptPhotos((prev) =>
@@ -15,8 +19,39 @@ export default function PropertyForm({ property }: { property?: Property }) {
     );
   }
 
+  async function handleGenerateDescription() {
+    if (!formRef.current) return;
+    setGenerating(true);
+    setGenerateError(null);
+    try {
+      const data = new FormData(formRef.current);
+      const text = await generateDescription({
+        address: String(data.get("address") || ""),
+        city: String(data.get("city") || ""),
+        state: String(data.get("state") || ""),
+        zip: String(data.get("zip") || ""),
+        price: String(data.get("price") || ""),
+        down_payment: String(data.get("down_payment") || ""),
+        monthly_payment: String(data.get("monthly_payment") || ""),
+        term_years: String(data.get("term_years") || ""),
+        beds: String(data.get("beds") || ""),
+        baths: String(data.get("baths") || ""),
+        sqft: String(data.get("sqft") || ""),
+        lot_size: String(data.get("lot_size") || ""),
+        year_built: String(data.get("year_built") || ""),
+        category: String(data.get("category") || ""),
+      });
+      if (descriptionRef.current) descriptionRef.current.value = text;
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   return (
     <form
+      ref={formRef}
       action={async (formData) => {
         setSubmitting(true);
         await saveProperty(formData);
@@ -111,16 +146,32 @@ export default function PropertyForm({ property }: { property?: Property }) {
           </div>
         </div>
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-ink-soft mb-1">
-            Description
-          </label>
+          <div className="mb-1 flex items-center justify-between">
+            <label htmlFor="description" className="block text-sm font-medium text-ink-soft">
+              Description
+            </label>
+            <button
+              type="button"
+              onClick={handleGenerateDescription}
+              disabled={generating}
+              className="text-sm font-medium text-forest-deep hover:underline disabled:opacity-60"
+            >
+              {generating ? "Generating..." : "Generate with AI"}
+            </button>
+          </div>
           <textarea
             id="description"
             name="description"
+            ref={descriptionRef}
             rows={5}
             defaultValue={property?.description ?? ""}
             className="w-full rounded-lg border border-rule px-3 py-2"
           />
+          {generateError && <p className="mt-1 text-sm text-clay-deep">{generateError}</p>}
+          <p className="mt-1 text-xs text-ink-mute">
+            Fill in the fields above first, then generate. Always review before saving, it can be
+            edited like normal text.
+          </p>
         </div>
       </section>
 

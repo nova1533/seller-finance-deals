@@ -18,7 +18,7 @@ export default async function HomePage() {
             {siteConfig.tagline}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-ink-soft">
-            Every home below is available on contract for deed — a straightforward path to
+            Every home below is available on contract for deed, a straightforward path to
             ownership without a traditional bank loan.
           </p>
         </div>
@@ -28,7 +28,7 @@ export default async function HomePage() {
         <h2 className="font-serif text-2xl text-ink mb-6">Available Now</h2>
         {available.length === 0 ? (
           <p className="text-ink-soft">
-            Nothing available this moment — check back soon, or see what&apos;s coming below.
+            Nothing available this moment. Check back soon, or see what&apos;s coming below.
           </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -67,7 +67,7 @@ export default async function HomePage() {
           <ol className="grid gap-6 sm:grid-cols-2">
             {[
               ["1. Schedule a showing", "Walk through the home in person before you decide."],
-              ["2. Get approved", "No bank required — we work directly with you."],
+              ["2. Get approved", "No bank required, we work directly with you."],
               ["3. Sign your contract", "Agree on price, down payment, and monthly terms."],
               ["4. Move in", "Start building equity in your own home."],
             ].map(([title, body]) => (

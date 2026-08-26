@@ -25,7 +25,7 @@ export default async function AdminDashboard() {
       </div>
 
       {properties.length === 0 ? (
-        <p className="text-ink-soft">No properties yet — add your first one.</p>
+        <p className="text-ink-soft">No properties yet, add your first one.</p>
       ) : (
         <div className="divide-y divide-rule rounded-2xl border border-rule bg-white">
           {properties.map((p) => (

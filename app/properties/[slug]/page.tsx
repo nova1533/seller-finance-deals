@@ -61,7 +61,7 @@ export default async function PropertyDetailPage({
         <Fact label="Price" value={formatCurrency(property.price)} />
         <Fact label="Down Payment" value={formatCurrency(property.down_payment)} />
         <Fact label="Monthly Payment" value={`${formatCurrency(property.monthly_payment)}/mo`} />
-        <Fact label="Term" value={property.term_years ? `${property.term_years} years` : "—"} />
+        <Fact label="Term" value={property.term_years ? `${property.term_years} years` : "N/A"} />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-6 text-sm text-ink-soft">
