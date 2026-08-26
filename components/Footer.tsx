@@ -11,8 +11,8 @@ export default function Footer() {
         </p>
         <p className="text-xs text-ink-mute">
           Equal Housing Opportunity. Pricing, down payment, and monthly payment terms shown are
-          estimates and subject to change; contact us for full contract for deed terms. This is
-          not a bank, mortgage lender, or licensed mortgage originator.
+          estimates and subject to change; contact us for full seller finance terms. This is not
+          a bank, mortgage lender, or licensed mortgage originator.
         </p>
         <p className="text-xs text-ink-mute">
           &copy; {new Date().getFullYear()} JPBA Investments, LLC. All rights reserved.

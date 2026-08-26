@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description:
-    "Browse homes available on contract for deed / owner financing in the Oklahoma City metro. No bank required.",
+    "Browse homes available on seller finance / owner financing in the Oklahoma City metro. No bank required.",
   openGraph: {
     siteName: siteConfig.name,
     locale: "en_US",

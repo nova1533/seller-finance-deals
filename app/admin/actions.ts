@@ -148,7 +148,9 @@ export async function generateDescription(input: DescriptionInput): Promise<stri
         role: "user",
         content:
           "Write a short, warm, honest 3 to 4 sentence buyer-facing description for a home " +
-          "being sold on contract for deed (seller financing) in the Oklahoma City metro. " +
+          "being sold via seller financing in the Oklahoma City metro. Do not say \"contract " +
+          "for deed\", since these deals are structured differently case by case, just say " +
+          "seller finance or seller financing. " +
           "Use only the facts given below, never invent details like condition, renovations, " +
           "or neighborhood features that aren't listed. Do not use em dashes, use commas or " +
           "periods instead. Write plain prose only, no headers or bullet points.\n\n" +

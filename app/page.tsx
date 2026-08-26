@@ -18,8 +18,7 @@ export default async function HomePage() {
             {siteConfig.tagline}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-ink-soft">
-            Every home below is available on contract for deed, no traditional bank loan
-            required.
+            Every home below is available on seller finance, no traditional bank loan required.
           </p>
         </div>
       </section>
