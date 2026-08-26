@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getProperties } from "@/lib/properties";
 import PropertyCard from "@/components/PropertyCard";
 import { siteConfig } from "@/lib/site-config";
@@ -13,13 +14,26 @@ export default async function HomePage() {
   return (
     <div>
       <section className="border-b border-rule bg-cream-2">
-        <div className="mx-auto max-w-6xl px-6 py-20 text-center">
-          <h1 className="font-serif text-4xl sm:text-5xl text-forest-deep">
-            {siteConfig.tagline}
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-ink-soft">
-            Every home below is available on seller finance, no traditional bank loan required.
-          </p>
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 text-center lg:grid-cols-2 lg:py-20 lg:text-left">
+          <div>
+            <h1 className="font-serif text-4xl sm:text-5xl text-forest-deep">
+              {siteConfig.tagline}
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-ink-soft lg:mx-0">
+              Every home below is available on seller finance, no traditional bank loan
+              required.
+            </p>
+          </div>
+          <div className="mx-auto w-full max-w-lg lg:max-w-none">
+            <Image
+              src="/hero-house.png"
+              alt=""
+              width={1840}
+              height={1245}
+              priority
+              className="h-auto w-full"
+            />
+          </div>
         </div>
       </section>
 
