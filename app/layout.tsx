@@ -18,12 +18,18 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://commongroundhomesok.com"),
   title: {
     default: `${siteConfig.name} | Owner-Financed Homes in the OKC Metro`,
     template: `%s | ${siteConfig.name}`,
   },
   description:
     "Browse homes available on contract for deed / owner financing in the Oklahoma City metro. No bank required.",
+  openGraph: {
+    siteName: siteConfig.name,
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
