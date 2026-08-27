@@ -1,22 +1,63 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { saveProperty, generateDescription } from "@/app/admin/actions";
-import { photoUrl } from "@/lib/supabase/public";
+import { saveProperty, generateDescription, createPhotoUploadUrl } from "@/app/admin/actions";
+import { photoUrl, supabasePublic } from "@/lib/supabase/public";
 import type { Property } from "@/lib/types";
 
+interface UploadingFile {
+  id: string;
+  name: string;
+  status: "uploading" | "error";
+  error?: string;
+}
+
 export default function PropertyForm({ property }: { property?: Property }) {
-  const [keptPhotos, setKeptPhotos] = useState<string[]>(property?.photos ?? []);
+  const [photos, setPhotos] = useState<string[]>(property?.photos ?? []);
+  const [uploading, setUploading] = useState<UploadingFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const uploadPrefixRef = useRef(property?.slug ?? crypto.randomUUID());
 
-  function togglePhoto(path: string) {
-    setKeptPhotos((prev) =>
-      prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path]
-    );
+  function removePhoto(path: string) {
+    setPhotos((prev) => prev.filter((p) => p !== path));
+  }
+
+  function setCover(path: string) {
+    setPhotos((prev) => [path, ...prev.filter((p) => p !== path)]);
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = ""; // allow selecting the same file again later
+
+    for (const file of files) {
+      const id = crypto.randomUUID();
+      setUploading((prev) => [...prev, { id, name: file.name, status: "uploading" }]);
+
+      try {
+        const { path, token } = await createPhotoUploadUrl(uploadPrefixRef.current, file.name);
+        const { error } = await supabasePublic()
+          .storage.from("property-photos")
+          .uploadToSignedUrl(path, token, file);
+        if (error) throw new Error(error.message);
+
+        setPhotos((prev) => [...prev, path]);
+        setUploading((prev) => prev.filter((u) => u.id !== id));
+      } catch (err) {
+        setUploading((prev) =>
+          prev.map((u) =>
+            u.id === id
+              ? { ...u, status: "error", error: err instanceof Error ? err.message : "Upload failed" }
+              : u
+          )
+        );
+      }
+    }
   }
 
   async function handleGenerateDescription() {
@@ -49,12 +90,32 @@ export default function PropertyForm({ property }: { property?: Property }) {
     }
   }
 
+  const stillUploading = uploading.some((u) => u.status === "uploading");
+
   return (
     <form
       ref={formRef}
       action={async (formData) => {
         setSubmitting(true);
-        await saveProperty(formData);
+        setSaveError(null);
+        try {
+          await saveProperty(formData);
+        } catch (err) {
+          // Next's redirect() on success works by throwing a special signal —
+          // let that pass through so navigation actually happens, and only
+          // treat anything else as a real failure to show the user.
+          if (
+            err &&
+            typeof err === "object" &&
+            "digest" in err &&
+            typeof (err as { digest?: unknown }).digest === "string" &&
+            (err as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+          ) {
+            throw err;
+          }
+          setSaveError(err instanceof Error ? err.message : "Something went wrong saving. Try again.");
+          setSubmitting(false);
+        }
       }}
       className="space-y-8 max-w-2xl"
     >
@@ -63,8 +124,8 @@ export default function PropertyForm({ property }: { property?: Property }) {
       {property?.photos.map((p) => (
         <input key={p} type="hidden" name="original_photos" value={p} />
       ))}
-      {keptPhotos.map((p) => (
-        <input key={p} type="hidden" name="existing_photos" value={p} />
+      {photos.map((p) => (
+        <input key={p} type="hidden" name="photos" value={p} />
       ))}
 
       <section className="space-y-4">
@@ -177,40 +238,78 @@ export default function PropertyForm({ property }: { property?: Property }) {
 
       <section className="space-y-4">
         <h2 className="font-serif text-lg text-ink">Photos</h2>
-        {property && property.photos.length > 0 && (
+
+        {(photos.length > 0 || uploading.length > 0) && (
           <div className="grid grid-cols-4 gap-3">
-            {property.photos.map((p) => (
-              <label key={p} className="relative block cursor-pointer">
+            {photos.map((p, i) => (
+              <div key={p} className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photoUrl(p)}
                   alt=""
-                  className={`h-24 w-full rounded-lg object-cover ${
-                    keptPhotos.includes(p) ? "" : "opacity-30"
-                  }`}
+                  className="h-24 w-full rounded-lg border border-rule object-cover"
                 />
-                <input
-                  type="checkbox"
-                  checked={keptPhotos.includes(p)}
-                  onChange={() => togglePhoto(p)}
-                  className="absolute right-1 top-1 h-4 w-4"
-                />
-              </label>
+                <button
+                  type="button"
+                  onClick={() => removePhoto(p)}
+                  aria-label="Remove photo"
+                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-ink/70 text-xs font-bold text-cream hover:bg-clay-deep"
+                >
+                  ×
+                </button>
+                <label className="absolute bottom-1 left-1 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-ink-soft">
+                  <input
+                    type="radio"
+                    name="cover_display_only"
+                    checked={i === 0}
+                    onChange={() => setCover(p)}
+                    className="h-3 w-3"
+                  />
+                  Cover
+                </label>
+              </div>
+            ))}
+            {uploading.map((u) => (
+              <div
+                key={u.id}
+                className="flex h-24 flex-col items-center justify-center rounded-lg border border-dashed border-rule bg-cream-2 p-2 text-center"
+              >
+                {u.status === "uploading" ? (
+                  <span className="text-xs text-ink-mute">Uploading…</span>
+                ) : (
+                  <span className="text-xs text-clay-deep">{u.error ?? "Upload failed"}</span>
+                )}
+                <span className="mt-1 truncate text-[10px] text-ink-mute w-full">{u.name}</span>
+              </div>
             ))}
           </div>
         )}
+
         <p className="text-xs text-ink-mute">
-          Uncheck a photo to remove it. Add new photos below.
+          Pick which photo is the cover (used as the main thumbnail), or remove one with the ×.
+          Photos upload as soon as you select them below.
         </p>
-        <input type="file" name="photos" accept="image/*" multiple className="block w-full text-sm" />
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          className="block w-full text-sm"
+        />
       </section>
+
+      {saveError && (
+        <p className="rounded-lg border border-clay-deep bg-clay-soft/30 px-4 py-3 text-sm text-clay-deep">
+          {saveError}
+        </p>
+      )}
 
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || stillUploading}
         className="rounded-full bg-forest px-6 py-3 font-semibold text-cream hover:bg-forest-deep disabled:opacity-60"
       >
-        {submitting ? "Saving…" : "Save Property"}
+        {submitting ? "Saving…" : stillUploading ? "Waiting for photos…" : "Save Property"}
       </button>
     </form>
   );

@@ -40,28 +40,18 @@ export async function saveProperty(formData: FormData) {
 
   const supabase = supabaseAdmin();
 
+  // Photos are uploaded client-side straight to Supabase Storage before this
+  // action ever runs (see createPhotoUploadUrl) — Vercel's serverless
+  // functions hard-cap request bodies at 4.5MB regardless of any app-level
+  // config, so raw photo bytes can never come through here. What arrives in
+  // "photos" is just the final ordered list of storage paths to keep.
   const originalPhotos = formData.getAll("original_photos") as string[];
-  const keptPhotos = formData.getAll("existing_photos") as string[];
-  const removedPhotos = originalPhotos.filter((p) => !keptPhotos.includes(p));
+  const photos = formData.getAll("photos") as string[];
+  const removedPhotos = originalPhotos.filter((p) => !photos.includes(p));
 
   if (removedPhotos.length > 0) {
     await supabase.storage.from("property-photos").remove(removedPhotos);
   }
-
-  const newFiles = (formData.getAll("photos") as File[]).filter((f) => f && f.size > 0);
-  const uploadedPaths: string[] = [];
-
-  for (const file of newFiles) {
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    const path = `${slug}/${Date.now()}-${safeName}`;
-    const { error } = await supabase.storage
-      .from("property-photos")
-      .upload(path, file, { contentType: file.type, upsert: false });
-    if (error) throw new Error(`Photo upload failed: ${error.message}`);
-    uploadedPaths.push(path);
-  }
-
-  const photos = [...keptPhotos, ...uploadedPaths];
 
   const record = {
     slug,
@@ -96,6 +86,21 @@ export async function saveProperty(formData: FormData) {
   revalidatePath(`/properties/${slug}`);
   revalidatePath("/admin");
   redirect("/admin");
+}
+
+// Generates a short-lived signed URL the browser can upload a photo to
+// directly, so the file bytes never pass through our own server (and never
+// hit Vercel's 4.5MB request body cap).
+export async function createPhotoUploadUrl(
+  slugOrPrefix: string,
+  fileName: string
+): Promise<{ path: string; token: string }> {
+  const supabase = supabaseAdmin();
+  const safeName = fileName.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  const path = `${slugOrPrefix}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+  const { data, error } = await supabase.storage.from("property-photos").createSignedUploadUrl(path);
+  if (error) throw new Error(`Could not prepare photo upload: ${error.message}`);
+  return { path: data.path, token: data.token };
 }
 
 export interface DescriptionInput {
