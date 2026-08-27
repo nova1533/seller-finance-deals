@@ -10,10 +10,10 @@ export default function Nav() {
           <Image
             src="/logo.png"
             alt={siteConfig.name}
-            width={253}
-            height={72}
+            width={393}
+            height={112}
             priority
-            className="h-14 w-auto sm:h-[72px]"
+            className="h-20 w-auto sm:h-28"
           />
         </Link>
         <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium whitespace-nowrap text-ink-soft">

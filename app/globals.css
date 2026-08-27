@@ -17,18 +17,11 @@
   --color-forest-soft: #a9bdae;
 
   --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-serif: var(--font-fraunces), Georgia, serif;
+  --font-serif: var(--font-lora), Georgia, serif;
 }
 
 body {
   background-color: var(--color-cream);
   color: var(--color-ink);
   font-family: var(--font-sans);
-}
-
-/* Fraunces renders "ff"/"fi"/"fl" as a decorative wonky ligature by default;
-   this keeps letters plain and predictable at display sizes. */
-.font-serif {
-  font-variant-ligatures: none;
-  font-feature-settings: "liga" 0, "dlig" 0, "calt" 0;
 }
